@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATH ZONE | 10 Retos Matemáticos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        .subtitle {
+            color: #5f6368;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #3c4043;
+        }
+        .question-box {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid #1a73e8;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        button:hover {
+            background-color: #e8f0fe;
+            border-color: #1a73e8;
+            color: #1a73e8;
+        }
+        .screen { display: none; }
+        .active { display: block; }
+        .success-msg {
+            color: #137333;
+            background-color: #e6f4ea;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .reset-btn {
+            margin-top: 20px;
+            background-color: #1a73e8;
+            color: white;
+            text-align: center;
+            justify-content: center;
+        }
+        .reset-btn:hover {
+            background-color: #1557b0;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>MATH ZONE</h1>
+    <div class="subtitle">Aprende · Juega · Avanza</div>
+
+    <!-- Pantalla de Juego -->
+    <div id="game-screen" class="screen active">
+        <div class="stats">
+            <span id="reto-num">Reto 1 de 10</span>
+            <span id="aciertos-num">Aciertos: 0</span>
+        </div>
+        <div id="question" class="question-box">Cargando reto...</div>
+        <div id="options" class="options"></div>
+    </div>
+
+    <!-- Pantalla Final -->
+    <div id="end-screen" class="screen">
+        <div class="success-msg">
+            ¡MISIÓN CUMPLIDA!<br><br>
+            Terminaste los 10 retos.
+        </div>
+        <p id="final-score"></p>
+        <button class="reset-btn" onclick="reiniciarJuego()">Volver a jugar MATH ZONE</button>
+    </div>
+</div>
+
+<script>
+    const retos = [
+        { q: "Resuelve para x: 2x + 5 = 15", o: ["x = 5", "x = 10", "x = 4", "x = 6"], a: 0 },
+        { q: "¿Cuál es el valor de la hipotenusa de un triángulo rectángulo de catetos 3 y 4?", o: ["5", "7", "6", "12"], a: 0 },
+        { q: "Factoriza la expresión: x² - 9", o: ["(x-3)(x-3)", "(x+3)(x+3)", "(x-3)(x+3)", "(x-9)(x+1)"], a: 2 },
+        { q: "Si f(x) = 3x - 2, ¿cuánto es f(4)?", o: ["10", "12", "14", "8"], a: 0 },
+        { q: "¿Cuál es la pendiente de la recta y = -2x + 7?", o: ["7", "2", "-2", "0"], a: 2 },
+        { q: "Resuelve el sistema: x + y = 10, x - y = 2", o: ["x=5, y=5", "x=6, y=4", "x=7, y=3", "x=8, y=2"], a: 1 },
+        { q: "¿Cuánto suma la medida de los ángulos internos de un triángulo?", o: ["90°", "180°", "360°", "270°"], a: 1 },
+        { q: "Simplifica: (2x³)(4x²)", o: ["8x⁶", "6x⁵", "8x⁵", "6x⁶"], a: 2 },
+        { q: "¿Cuál es la solución de x² - 16 = 0?", o: ["x = 4", "x = ±4", "x = -4", "No tiene solución real"], a: 1 },
+        { q: "Si un círculo tiene radio r = 3, ¿cuál es su área aproximada? (π ≈ 3.14)", o: ["9.42", "18.84", "28.26", "12.56"], a: 2 }
+    ];
+
+    let indiceActual = 0;
+    let aciertos = 0;
+
+    function cargarReto() {
+        if (indiceActual >= retos.length) {
+            mostrarPantallaFinal();
+            return;
+        }
+
+        const reto = retos[indiceActual];
+        document.getElementById("reto-num").innerText = `Reto ${indiceActual + 1} de ${retos.length}`;
+        document.getElementById("aciertos-num").innerText = `Aciertos: ${aciertos}`;
+        document.getElementById("question").innerText = reto.q;
+
+        const optionsContainer = document.getElementById("options");
+        optionsContainer.innerHTML = "";
+
+        reto.o.forEach((opcion, index) => {
+            const btn = document.createElement("button");
+            btn.innerText = opcion;
+            btn.onclick = () => verificarRespuesta(index);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function verificarRespuesta(indexSeleccionado) {
+        if (indexSeleccionado === retos[indiceActual].a) {
+            aciertos++;
+        }
+        indiceActual++;
+        cargarReto();
+    }
+
+    function mostrarPantallaFinal() {
+        document.getElementById("game-screen").classList.remove("active");
+        document.getElementById("end-screen").classList.add("active");
+        document.getElementById("final-score").innerText = `Puntuación final: ${aciertos} de ${retos.length} aciertos.`;
+    }
+
+    function reiniciarJuego() {
+        indiceActual = 0;
+        aciertos = 0;
+        document.getElementById("end-screen").classList.remove("active");
+        document.getElementById("game-screen").classList.add("active");
+        cargarReto();
+    }
+
+    // Iniciar juego por primera vez
+    cargarReto();
+</script>
+
+</body>
+</html>
